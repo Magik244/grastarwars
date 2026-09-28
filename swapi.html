@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gwiezdne wojny</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background:url("https://th.bing.com/th/id/R.23a24d1a58127eb95a4acf9772db86fe?rik=1NQPy7J50I3RsA&riu=http%3a%2f%2fwallpapercave.com%2fwp%2fbV3WiYh.jpg&ehk=9SHvCOlThJVWTSh4Ny%2b0OzKbwYmn41rVCY%2fyjCfItq8%3d&risl=&pid=ImgRaw&r=0");
+            color: rgb(224, 224, 224);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 42px;
+        }
+
+        button {
+            padding: 14px 25px;
+            margin: 8px;
+            background: #000000;
+            color: rgb(255, 255, 255);
+            border: 2px solid #f5e021;
+            border-radius: 8px;
+            font-size: 18px;
+        }
+        .ekran,
+        .karta {
+            max-width: 650px;
+            margin: 60px auto;
+            padding: 30px;
+            background: rgba(15,15,15,.95);
+            border: 3px solid #f5e021;
+            border-radius: 15px;
+        }
+
+        .karta {
+            margin: 30px auto;
+        }
+
+        .wynik {
+            font-size: 25px;
+            color: #f5e021;
+        }
+
+        .pytanie {
+            font-size: 22px;
+            margin: 25px;
+        }
+
+        .odpowiedzi {
+            display: flex;
+            justify-content: center;
+        }
+
+        .poprawna {
+            background: green;
+        }
+
+        .bledna {
+            background: red;
+        }
+
+        .ukryty {
+            display: none;
+        }
+
+        img {
+            width: 180px;
+            height: 180px;
+            object-fit: cover;
+            margin-top: 20px;
+            border: 2px solid #f5e021;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 10px;
+            }
+
+            .odpowiedzi {
+                flex-direction: column;
+            }
+
+            .odpowiedzi button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start" class="ekran">
+
+        <h1>Star Wars Skin Game</h1>
+
+        <h2>Zgadnij kolor skóry</h2>
+
+        <p>Wybierz prawidłowy kolor skóry postaci</p>
+        <p>Gra ma 10 rund</p>
+
+        <button id="startprzycisk">Rozpocznij grę</button>
+
+    </div>
+
+
+    <div id="gra" class="ukryty">
+
+        <h1>Gwiezdne wojny gierka</h1>
+
+        <div class="wynik">
+            punkty: <span id="punkty">0</span>
+        </div>
+
+        <div class="karta">
+
+            <h2 id="postac">-</h2>
+
+            <div class="pytanie">
+                A jaki kolor skóry ma ta postać?
+            </div>
+
+            <div id="odpowiedzi" class="odpowiedzi"></div>
+
+            <div id="zdjecie"></div>
+
+        </div>
+
+        <p>
+            Runda: <span id="runda">0</span> / 10
+        </p>
+
+        <h3 id="wynikgry"></h3>
+
+        <button id="nastepna" class="ukryty">
+            Następna runda
+        </button>
+
+    </div>
+
+
+    <div id="koniec" class="ekran ukryty">
+
+        <h1>Star Wars Skin Game</h1>
+
+        <h2>Koniec gry</h2>
+
+        <p>Twój wynik:</p>
+
+        <h2><span id="koncowywynik">0</span> / 10</h2>
+
+        <button id="restart">
+            Rozpocznij grę
+        </button>
+
+    </div>
+
+
+    <script>
+        let postacie = [];
+        let uzyte = [];
+        let postac = null;
+        let punkty = 0;
+        let runda = 0;
+
+        const zdjecia = {
+            "Ackbar": "Ackbar.jpg",
+            "Anakin Skywalker": "Anakin-Skywalker.jpg",
+            "Arvel Crynyd": "Arvel Crynyd.jpg",
+            "Ayla Secura": "Ayla Secura.jpg",
+            "Beru Whitesun lars": "Beru-Whitesun-lars.jpg",
+            "Bib Fortuna": "Bib Fortuna.png",
+            "Biggs Darklighter": "Biggs-Darklighter.jpg",
+            "Boba Fett": "Boba Fett.jpg",
+            "Bossk": "Bossk.jpg",
+            "C-3PO": "C-3PO.jpg",
+            "Chewbacca": "chewbacca.jpg",
+            "Darth Maul": "Darth Maul.jpg",
+            "Darth Vader": "darth-vader.jpg",
+            "Dud Bolt": "Dud Bolt.jpg",
+            "Gasgano": "Gasgano.jpg",
+            "Greedo": "Greedo.jpg",
+            "Han Solo": "Han Solo.jpg",
+            "IG-88": "IG-88.png",
+            "Jabba Desilijic Tiure": "Jabba Desilijic Tiure.jpg",
+            "Jar Jar Binks": "Jar Jar Binks.jpg",
+            "Jek Tono Porkins": "Jek Tono Porkins.jpg",
+            "Lando Calrissian": "Lando Calrissian.jpg",
+            "Leia Organa": "Leia-Organa.jpg",
+            "Lobot": "Lobot.jpg",
+            "Luke Skywalker": "luke skywalker.jpg",
+            "Mon Mothma": "Mon Mothma.jpg",
+            "Nien Nunb": "Nien Nunb.jpg",
+            "Nute Gunray": "Nute Gunray.jpg",
+            "Obi-Wan Kenobi": "Obi-Wan-Kenobi.jpg",
+            "Owen Lars": "Owen-Lars.jpg",
+            "Padme Amidala": "Padme Amidala.jpg",
+            "Palpatine": "Palpatine.jpg",
+            "Plo Koon": "Plo Koon.jpg",
+            "Qui-Gon Jinn": "Qui-Gon Jinn.jpg",
+            "Quarsh Panaka": "Quarsh Panaka.jpg",
+            "Ratts Tyerel": "Ratts Tyerel.jpg",
+            "Ric Olie": "Ric Olie.jpg",
+            "Roos Tarpals": "Roos Tarpals.jpg",
+            "Rugor Nass": "Rugor Nass.jpg",
+            "Sebulba": "Sebulba.jpg",
+            "Shmi Skywalker": "Shmi Skywalker.jpg",
+            "Watto": "Watto.jpg",
+            "Wedge Antilles": "Wedge Antilles.jpg",
+            "Wicket Systri Warrick": "Wicket Systri Warrick.jpg",
+            "Wilhuff Tarkin": "Wilhuff Tarkin.png",
+            "Yoda": "yoda.jpg"
+        };
+
+
+
+
+
+
+
+        async function pobierzpostacie() {
+
+        postacie = [];
+
+        try {
+
+            for (let i = 1; i <= 9; i++) {
+
+                const odpowiedz = await fetch(
+                    "https://swapi.dev/api/people/?page=" + i
+                );
+
+                if (!odpowiedz.ok) {
+                    throw new Error("Nie udało się pobrać danych.");
+                }
+
+                const dane = await odpowiedz.json();
+
+                if (dane.results) {
+
+                    postacie.push(
+                        ...dane.results.filter(
+                            x =>
+                                x.skin_color &&
+                                x.skin_color !== "unknown" &&
+                                x.skin_color !== "n/a"
+                        )
+                    );
+
+                }
+            }
+
+
+            if (postacie.length < 3) {
+                throw new Error("Za mało postaci do uruchomienia gry.");
+            }
+            przycisk.disabled = false;
+            przycisk.textContent = "Rozpocznij grę";
+
+        } catch (blad) {
+
+            console.error(blad);
+
+            document.getElementById("status").textContent =
+                "Nie udało się pobrać postaci. Sprawdź internet i odśwież stronę.";
+
+            document.getElementById("startprzycisk").disabled = true;
+        }
+    }
+
+
+    function losujpostac() {
+
+        const dostepne = postacie.filter(
+            x => !uzyte.includes(x.name)
+        );
+
+        if (dostepne.length === 0) {
+            return null;
+        }
+
+        return dostepne[
+            Math.floor(
+                Math.random() * dostepne.length
+            )
+        ];
+    }
+
+
+    function losujkolory(poprawny) {
+
+        let kolory = [
+            ...new Set(
+                postacie.map(x => x.skin_color)
+            )
+        ];
+
+        kolory = kolory.filter(
+            x =>
+                x &&
+                x !== "unknown" &&
+                x !== "n/a" &&
+                x !== poprawny
+        );
+
+
+        let odpowiedzi = [poprawny];
+
+
+        while (
+            odpowiedzi.length < 3 &&
+            kolory.length > 0
+        ) {
+
+            const kolor =
+                kolory[
+                    Math.floor(
+                        Math.random() * kolory.length
+                    )
+                ];
+
+            if (!odpowiedzi.includes(kolor)) {
+                odpowiedzi.push(kolor);
+            }
+
+        }
+
+
+        return odpowiedzi.sort(
+            () => Math.random() - 0.5
+        );
+    }
+
+
+    function pokazpytanie() {
+
+        postac = losujpostac();
+
+
+        if (!postac) {
+            koniecgry();
+            return;
+        }
+
+
+        uzyte.push(postac.name);
+        runda++;
+
+
+        document.getElementById("runda").textContent =
+            runda;
+
+        document.getElementById("postac").textContent =
+            postac.name;
+
+        document.getElementById("wynikgry").textContent = "";
+
+        document.getElementById("zdjecie").innerHTML = "";
+
+
+        const odpowiedzi =
+            losujkolory(postac.skin_color);
+
+
+        const miejsce =
+            document.getElementById("odpowiedzi");
+
+        miejsce.innerHTML = "";
+
+
+        odpowiedzi.forEach(kolor => {
+
+            const przycisk =
+                document.createElement("button");
+
+            przycisk.textContent = kolor;
+
+
+            przycisk.onclick = function() {
+
+                sprawdzodpowiedz(
+                    przycisk,
+                    kolor
+                );
+
+            };
+
+
+            miejsce.appendChild(przycisk);
+
+        });
+
+    }
+
+
+    function sprawdzodpowiedz(
+        przycisk,
+        odpowiedz
+    ) {
+
+        const przyciski =
+            document.querySelectorAll(
+                "#odpowiedzi button"
+            );
+
+
+        przyciski.forEach(x => {
+            x.disabled = true;
+        });
+
+
+        if (
+            odpowiedz ===
+            postac.skin_color
+        ) {
+
+            przycisk.classList.add(
+                "poprawna"
+            );
+
+            punkty++;
+
+
+            document.getElementById(
+                "wynikgry"
+            ).textContent =
+                "Dobrze! +1 punkt";
+
+        } else {
+
+            przycisk.classList.add(
+                "bledna"
+            );
+
+
+            przyciski.forEach(x => {
+
+                if (
+                    x.textContent ===
+                    postac.skin_color
+                ) {
+
+                    x.classList.add(
+                        "poprawna"
+                    );
+
+                }
+
+            });
+
+
+            document.getElementById(
+                "wynikgry"
+            ).textContent =
+                "Źle! Poprawna odpowiedź: " +
+                postac.skin_color;
+
+        }
+
+
+        document.getElementById(
+            "punkty"
+        ).textContent = punkty;
+
+
+        pokazzdjecie();
+
+
+        document.getElementById(
+            "nastepna"
+        ).classList.remove(
+            "ukryty"
+        );
+
+    }
+
+
+    function pokazzdjecie() {
+
+        const img =
+            document.createElement("img");
+
+
+        img.src =
+            zdjecia[postac.name] ||
+            "avatar.jpg";
+
+
+        img.alt = postac.name;
+
+
+        img.onerror = function() {
+
+            this.onerror = null;
+            this.src = "avatar.jpg";
+
+        };
+
+
+        document.getElementById(
+            "zdjecie"
+        ).appendChild(img);
+
+    }
+
+
+    function rozpocznijgre() {
+
+        if (postacie.length < 3) {
+            return;
+        }
+
+
+        punkty = 0;
+        runda = 0;
+        uzyte = [];
+
+
+        document.getElementById(
+            "punkty"
+        ).textContent = "0";
+
+
+        document.getElementById(
+            "start"
+        ).classList.add(
+            "ukryty"
+        );
+
+
+        document.getElementById(
+            "koniec"
+        ).classList.add(
+            "ukryty"
+        );
+
+
+        document.getElementById(
+            "gra"
+        ).classList.remove(
+            "ukryty"
+        );
+
+
+        document.getElementById(
+            "nastepna"
+        ).classList.add(
+            "ukryty"
+        );
+
+
+        pokazpytanie();
+
+    }
+
+
+    function koniecgry() {
+
+        document.getElementById(
+            "gra"
+        ).classList.add(
+            "ukryty"
+        );
+
+
+        document.getElementById(
+            "koniec"
+        ).classList.remove(
+            "ukryty"
+        );
+
+
+        document.getElementById(
+            "koncowywynik"
+        ).textContent = punkty;
+
+    }
+
+
+    document.getElementById(
+        "startprzycisk"
+    ).onclick = rozpocznijgre;
+
+
+    document.getElementById(
+        "restart"
+    ).onclick = rozpocznijgre;
+
+
+    document.getElementById(
+        "nastepna"
+    ).onclick = function() {
+
+        document.getElementById(
+            "nastepna"
+        ).classList.add(
+            "ukryty"
+        );
+
+
+        if (runda >= 10) {
+
+            koniecgry();
+
+        } else {
+
+            pokazpytanie();
+
+        }
+
+    };
+
+
+    pobierzpostacie();
+
+
+    </script>
+
+</body>
+</html>
